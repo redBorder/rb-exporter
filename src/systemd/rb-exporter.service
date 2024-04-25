@@ -1,0 +1,23 @@
+[Unit]
+Description=redBorder Exporter Service
+Requires=network.target
+After=network.target
+
+[Service]
+TimeoutStartSec=30
+RestartSec=10
+Restart=always
+
+User=rb-exporter
+Group=rb-exporter
+
+KillSignal=SIGTERM
+
+ExecStart=/etc/rc.d/init.d/rb-exporter start
+ExecStop=/etc/rc.d/init.d/rb-exporter stop
+Restart=always
+
+TimeoutStopSec=60
+
+[Install]
+WantedBy=multi-user.target
