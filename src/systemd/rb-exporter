@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 # $Id$
 #
 # rb-exporter         Start/Stop the rb-exporter daemon.
@@ -31,6 +31,7 @@ SYSTEMCTL_SKIP_REDIRECT=true
 
 
 RETVAL=0
+STARTED_ANY=0
 prog="pmacctd"
 binary=/usr/sbin/pmacctd
 
@@ -42,7 +43,20 @@ set_lock_file() {
   lockfile=/var/lock/rb-exporter-$1
 }
 
+cleanup_stale_state() {
+  if [ -f "$pidfile" ]; then
+    PID=$(cat "$pidfile")
+    if [ -n "$PID" ] && ! kill -0 "$PID" 2>/dev/null; then
+      echo "Found stale pidfile for $prog on $iface (PID $PID not running), cleaning up"
+      rm -f "$pidfile"
+      rm -f "$lockfile"
+    fi
+  fi
+}
+
 start() {
+
+  cleanup_stale_state
 
        if [ -d /etc/rb-exporter/$iface -a -f /etc/rb-exporter/$iface/rb-exporter.conf ]; then
           OPTIONS="-i ${iface} -F ${pidfile} -f /etc/rb-exporter/$iface/rb-exporter.conf"
@@ -50,13 +64,14 @@ start() {
           echo -n $"Starting $prog: on $iface "
           daemon --pidfile=$pidfile $binary $OPTIONS
           RETVAL=$?
+          [ $RETVAL -eq 0 ] && STARTED_ANY=1
           [ $RETVAL -eq 0 ] && touch $lockfile
           echo 
           return $RETVAL
         else
           echo "no config file for $prog on $iface"
           echo
-          return 0
+          return 1
         fi
 
 }
@@ -176,5 +191,11 @@ do
   esac
 
 done
+
+if [ "$1" = "start" ] && [ "$STARTED_ANY" -eq 0 ]; then
+  echo "rb-exporter: no pmacctd instances were started"
+  exit 1
+fi
+
 # echo $"RETVAL IS $RETVAL"
 exit $RETVAL
