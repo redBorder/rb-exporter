@@ -9,7 +9,7 @@ Type=forking
 TimeoutSec=30
 IgnoreSIGPIPE=no
 GuessMainPID=no
-RemainAfterExit=yes
+#RemainAfterExit=yes
 Restart=no
 KillMode=process
 
