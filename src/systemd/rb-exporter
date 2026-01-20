@@ -81,7 +81,7 @@ stop() {
         [ -f $lockfile ] && [ -f $pidfile ] && PID=$(<$pidfile)
         if [ "x$PID" != "x0" -a "x$PID" != "x" ]; then
           echo -n $"Stopping $prog: on $iface"
-          killproc -p $pidfile $binary
+          kill -TERM $(cat $pidfile)
           RETVAL=$?
           [ $RETVAL -eq 0 ] && rm -f $lockfile && rm -f $pidfile
           echo
