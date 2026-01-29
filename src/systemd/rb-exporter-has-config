@@ -1,0 +1,12 @@
+#!/usr/bin/bash
+
+BASE_DIR=/etc/rb-exporter
+
+for dir in "${BASE_DIR}"/*; do
+  [ ! -d "$dir" ] && continue
+  iface=$(basename "$dir")
+  [ "$iface" = "lo" ] && continue
+  [ -f "$dir/rb-exporter.conf" ] && exit 0
+done
+
+exit 1
