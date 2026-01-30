@@ -52,7 +52,10 @@ fi
 %doc README.md LICENSE
 
 %changelog
-* Thu Jan 29 2026 Akira García agarcia@redborder.com
+* Thu Jan 29 2026 Akira García <agarcia@redborder.com>
 - Replace legacy SysV init script with systemd-native oneshot service
 - Align service state with real exporter status
 - Fix dead-but-locked and false running states
+
+* Wed Apr 24 2024 David Vanhoucke <dvanhoucke@redborder.com>
+- First version of rb-exporter
