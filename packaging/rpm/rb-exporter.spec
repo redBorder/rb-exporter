@@ -32,6 +32,7 @@ Requires: pmacct arpwatch rsyslog
 %pre
 getent group rb-exporter >/dev/null || groupadd -r rb-exporter
 getent passwd rb-exporter >/dev/null || useradd -r -g rb-exporter -d /var/lib/rb-exporter -s /sbin/nologin -c "rb-exporter user" rb-exporter
+pkill -TERM pmacctd >/dev/null 2>&1 || true
 
 %post
 systemctl daemon-reload >/dev/null 2>&1 || true
