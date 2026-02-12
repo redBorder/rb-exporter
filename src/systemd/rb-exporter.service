@@ -1,17 +1,21 @@
 [Unit]
-SourcePath=/etc/rc.d/init.d/rb-exporter
-Description=redBorder Exporter Service
-Requires=network.target
+Description=redBorder Exporter (native pmacctd)
 After=network.target
+Requires=network.target
+
+StartLimitIntervalSec=60
+StartLimitBurst=5
 
 [Service]
-Type=forking
-TimeoutSec=30
-IgnoreSIGPIPE=no
-GuessMainPID=no
-RemainAfterExit=yes
-Restart=no
-KillMode=process
+Type=simple
 
-ExecStart=/etc/rc.d/init.d/rb-exporter start
-ExecStop=/etc/rc.d/init.d/rb-exporter stop
+ExecStart=/usr/sbin/pmacctd -f /etc/rb-exporter/enp0s8/rb-exporter.conf
+
+Restart=on-failure
+RestartSec=5s
+
+KillMode=control-group
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

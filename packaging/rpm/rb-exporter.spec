@@ -1,7 +1,7 @@
 Name:      rb-exporter
 Version:   %{__version}
 Release:   %{__release}%{?dist}
-BuildArch: x86_64
+BuildArch: noarch
 Summary:   rb-exporter service to convert traffic to netslow/sflow based on pmacct
 
 License:   AGPL-3.0
@@ -21,27 +21,42 @@ Requires: pmacct arpwatch rsyslog
 %build
 
 %install
-%__mkdir_p -m 0755 $RPM_BUILD_ROOT%{_initrddir}
-%__mkdir_p -p $RPM_BUILD_ROOT/usr/lib/systemd/system/
-%__install -p -m 0755 src/systemd/rb-exporter $RPM_BUILD_ROOT%{_initrddir}
-%__install -p -m 0644 src/systemd/rb-exporter.service $RPM_BUILD_ROOT/usr/lib/systemd/system
+%__mkdir_p -p %{buildroot}/usr/lib/systemd/system
+%__install -m 0644 src/systemd/rb-exporter.service %{buildroot}/usr/lib/systemd/system/rb-exporter.service
+
+%__mkdir_p -p %{buildroot}%{_initrddir}
+%__install -m 0755 src/systemd/rb-exporter-start %{buildroot}%{_initrddir}/rb-exporter-start
+%__install -m 0755 src/systemd/rb-exporter-stop %{buildroot}%{_initrddir}/rb-exporter-stop
+%__install -m 0755 src/systemd/rb-exporter-has-config %{buildroot}%{_initrddir}/rb-exporter-has-config
 
 %pre
 getent group rb-exporter >/dev/null || groupadd -r rb-exporter
 getent passwd rb-exporter >/dev/null || useradd -r -g rb-exporter -d /var/lib/rb-exporter -s /sbin/nologin -c "rb-exporter user" rb-exporter
+pkill -TERM pmacctd >/dev/null 2>&1 || true
 
 %post
-systemctl daemon-reload
+systemctl daemon-reload >/dev/null 2>&1 || true
+
+%preun
+if [ $1 -eq 0 ]; then
+  systemctl stop rb-exporter >/dev/null 2>&1 || true
+fi
 
 %files
 %defattr(755,root,root)
-%{_initrddir}/rb-exporter
+%{_initrddir}/rb-exporter-start
+%{_initrddir}/rb-exporter-stop
+%{_initrddir}/rb-exporter-has-config
 %defattr(644,root,root)
 /usr/lib/systemd/system/rb-exporter.service
 
-%doc
+%doc README.md LICENSE
 
 %changelog
+* Thu Jan 29 2026 Akira García <agarcia@redborder.com>
+- Replace legacy SysV init script with systemd-native oneshot service
+- Align service state with real exporter status
+- Fix dead-but-locked and false running states
+
 * Wed Apr 24 2024 David Vanhoucke <dvanhoucke@redborder.com>
 - First version of rb-exporter
-

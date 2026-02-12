@@ -1,0 +1,16 @@
+#!/usr/bin/bash
+set -euo pipefail
+
+RUN_DIR=/run
+
+for pidfile in ${RUN_DIR}/rb-exporter-*.pid; do
+  [ ! -f "$pidfile" ] && continue
+
+  pid=$(cat "$pidfile" 2>/dev/null || true)
+  [ -z "$pid" ] && continue
+
+  kill -TERM "$pid" 2>/dev/null || true
+  rm -f "$pidfile"
+done
+
+exit 0
