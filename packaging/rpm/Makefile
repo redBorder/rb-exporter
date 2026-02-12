@@ -55,3 +55,4 @@ clean:
 distclean: clean
 	rm -f build.log root.log state.log available_pkgs installed_pkgs \
 		*.rpm *.tar.gz
+
