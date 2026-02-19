@@ -64,7 +64,7 @@ fi
 
 %changelog
 * Thu Jan 29 2026 Akira García <agarcia@redborder.com>
-- Replace legacy SysV init script with systemd-native oneshot service
+- Replace legacy SysV init script with systemd-native service
 - Align service state with real exporter status
 - Fix dead-but-locked and false running states
 
