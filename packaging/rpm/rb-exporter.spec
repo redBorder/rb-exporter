@@ -1,7 +1,7 @@
 Name:      rb-exporter
 Version:   %{__version}
 Release:   %{__release}%{?dist}
-BuildArch: noarch
+BuildArch: x86_64
 Summary:   rb-exporter service to convert traffic to netslow/sflow based on pmacct
 
 License:   AGPL-3.0
@@ -35,7 +35,17 @@ getent passwd rb-exporter >/dev/null || useradd -r -g rb-exporter -d /var/lib/rb
 pkill -TERM pmacctd >/dev/null 2>&1 || true
 
 %post
+if [ -f /etc/rc.d/init.d/rb-exporter ]; then
+  rm -f /etc/rc.d/init.d/rb-exporter
+fi
+
 systemctl daemon-reload >/dev/null 2>&1 || true
+systemctl reset-failed rb-exporter >/dev/null 2>&1 || true
+
+%postun
+if [ $1 -eq 0 ]; then
+  systemctl daemon-reload >/dev/null 2>&1 || true
+fi
 
 %preun
 if [ $1 -eq 0 ]; then
