@@ -1,0 +1,14 @@
+[Unit]
+Description=rb-exporter instance %i
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/pmacctd -i %i -f /etc/rb-exporter/%i/rb-exporter.conf
+Restart=always
+RestartSec=5
+User=rb-exporter
+Group=rb-exporter
+
+[Install]
+WantedBy=multi-user.target

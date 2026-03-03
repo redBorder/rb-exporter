@@ -9,6 +9,7 @@ URL:       https://github.com/redBorder/rb-exporter
 Source0:   %{name}-%{version}.tar.gz
 
 Requires: pmacct arpwatch rsyslog
+%{?systemd_requires}
 
 %global debug_package %{nil}
 
@@ -21,47 +22,36 @@ Requires: pmacct arpwatch rsyslog
 %build
 
 %install
-%__mkdir_p -m 0755 $RPM_BUILD_ROOT%{_initrddir}
-%__mkdir_p -p $RPM_BUILD_ROOT/usr/lib/systemd/system/
-%__install -p -m 0755 src/systemd/rb-exporter $RPM_BUILD_ROOT%{_initrddir}
-%__install -p -m 0644 src/systemd/rb-exporter.service $RPM_BUILD_ROOT/usr/lib/systemd/system
+%__mkdir_p -p %{buildroot}%{_unitdir}
+%__install -m 0644 src/systemd/rb-exporter@.service %{buildroot}%{_unitdir}/rb-exporter@.service
 
 %pre
 getent group rb-exporter >/dev/null || groupadd -r rb-exporter
 getent passwd rb-exporter >/dev/null || useradd -r -g rb-exporter -d /var/lib/rb-exporter -s /sbin/nologin -c "rb-exporter user" rb-exporter
 
 %post
-if [ -f /etc/rc.d/init.d/rb-exporter ]; then
-  rm -f /etc/rc.d/init.d/rb-exporter
+if [ -f %{_unitdir}/rb-exporter.service ]; then
+  rm -f %{_unitdir}/rb-exporter.service
 fi
-
-systemctl daemon-reload >/dev/null 2>&1 || true
-systemctl reset-failed rb-exporter >/dev/null 2>&1 || true
-
-%postun
-if [ $1 -eq 0 ]; then
-  systemctl daemon-reload >/dev/null 2>&1 || true
-fi
+%systemd_post rb-exporter@.service
 
 %preun
-if [ $1 -eq 0 ]; then
-  systemctl stop rb-exporter >/dev/null 2>&1 || true
-fi
+%systemd_preun rb-exporter@.service
+
+%postun
+%systemd_postun_with_restart rb-exporter@.service
 
 %files
-%defattr(755,root,root)
-%{_initrddir}/rb-exporter
 %defattr(644,root,root)
-/usr/lib/systemd/system/rb-exporter.service
+/usr/lib/systemd/system/rb-exporter@.service
 
 %doc
 
 %changelog
-* Thu Jan 29 2026 Akira García <agarcia@redborder.com>
+* Thu Feb 26 2026 Akira García <agarcia@redborder.com>
 - Replace legacy SysV init script with systemd-native service
 - Align service state with real exporter status
 - Fix dead-but-locked and false running states
 
 * Wed Apr 24 2024 David Vanhoucke <dvanhoucke@redborder.com>
 - First version of rb-exporter
-
