@@ -26,6 +26,14 @@ Requires: pmacct arpwatch rsyslog
 %__install -m 0644 src/systemd/rb-exporter@.service %{buildroot}%{_unitdir}/rb-exporter@.service
 
 %pre
+if systemctl is-active --quiet rb-exporter.service; then
+  systemctl stop rb-exporter.service >/dev/null 2>&1 || :
+fi
+
+if systemctl is-enabled --quiet rb-exporter.service; then
+  systemctl disable rb-exporter.service >/dev/null 2>&1 || :
+fi
+
 getent group rb-exporter >/dev/null || groupadd -r rb-exporter
 getent passwd rb-exporter >/dev/null || useradd -r -g rb-exporter -d /var/lib/rb-exporter -s /sbin/nologin -c "rb-exporter user" rb-exporter
 
