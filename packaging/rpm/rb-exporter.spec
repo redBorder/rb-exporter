@@ -36,6 +36,10 @@ fi
 %systemd_post rb-exporter@.service
 
 %preun
+if [ $1 -eq 0 ]; then
+  systemctl stop 'rb-exporter@*' 2>/dev/null || :
+  systemctl disable 'rb-exporter@*' 2>/dev/null || :
+fi
 %systemd_preun rb-exporter@.service
 
 %postun
