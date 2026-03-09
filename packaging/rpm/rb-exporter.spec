@@ -41,6 +41,21 @@ if [ -f %{_unitdir}/rb-exporter.service ]; then
 fi
 %systemd_post rb-exporter@.service
 
+systemctl daemon-reload >/dev/null 2>&1 || :
+
+if [ -d /etc/rb-exporter ]; then
+  for d in /etc/rb-exporter/*; do
+    [ -d "$d" ] || continue
+    iface=$(basename "$d")
+    
+    if /usr/sbin/ip link show "$iface" >/dev/null 2>&1; then
+      systemctl enable --now rb-exporter@"$iface".service >/dev/null 2>&1 || :
+    else
+      rm -rf "$d"
+    fi    
+  done
+fi
+
 %preun
 if [ $1 -eq 0 ]; then
   systemctl stop 'rb-exporter@*' 2>/dev/null || :
