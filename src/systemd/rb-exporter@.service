@@ -1,0 +1,18 @@
+[Unit]
+Description=rb-exporter instance %i
+After=network.target
+ConditionPathExists=/sys/class/net/%i
+ConditionPathExists=/etc/rb-exporter/%i/rb-exporter.conf
+
+[Service]
+Type=simple
+ExecStartPre=/usr/sbin/ip link show %i
+ExecStartPre=/usr/bin/test -f /etc/rb-exporter/%i/rb-exporter.conf
+ExecStart=/usr/sbin/pmacctd -i %i -f /etc/rb-exporter/%i/rb-exporter.conf
+Restart=on-failure
+RestartSec=5
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
